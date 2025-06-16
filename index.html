@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>章洵老师的口算出题神器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            accent: '#F59E0B',
+            dark: '#1F2937',
+            light: '#F9FAFB'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-shadow {
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1);
+      }
+      .btn-hover {
+        @apply transition-all duration-300 transform hover:scale-105 hover:shadow-lg;
+      }
+      .input-focus {
+        @apply focus:ring-2 focus:ring-primary/50 focus:border-primary;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen font-sans text-dark">
+  <!-- 页面容器 -->
+  <div class="container mx-auto px-4 py-8 max-w-5xl">
+    <!-- 顶部标题 -->
+    <header class="text-center mb-10">
+      <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-3">
+        章洵老师的口算出题神器
+      </h1>
+      <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+        专为小学生设计的智能口算练习工具，自动生成加减乘除练习题，提升计算能力！
+      </p>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- 左侧设置面板 -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl p-6 card-shadow sticky top-8">
+          <h2 class="text-xl font-bold mb-6 text-primary flex items-center">
+            <i class="fa fa-sliders mr-2"></i> 练习设置
+          </h2>
+          
+          <form id="quizSettings" class="space-y-5">
+            <!-- 题目类型 -->
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">题目类型</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
+                  <input type="checkbox" name="operation" value="addition" class="form-checkbox h-5 w-5 text-primary rounded" checked>
+                  <span class="ml-2">加法</span>
+                </label>
+                <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
+                  <input type="checkbox" name="operation" value="subtraction" class="form-checkbox h-5 w-5 text-primary rounded" checked>
+                  <span class="ml-2">减法</span>
+                </label>
+                <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
+                  <input type="checkbox" name="operation" value="multiplication" class="form-checkbox h-5 w-5 text-primary rounded">
+                  <span class="ml-2">乘法</span>
+                </label>
+                <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
+                  <input type="checkbox" name="operation" value="division" class="form-checkbox h-5 w-5 text-primary rounded">
+                  <span class="ml-2">除法</span>
+                </label>
+              </div>
+            </div>
+            
+            <!-- 数值范围 -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label for="minValue" class="block text-gray-700 font-medium mb-2">最小值</label>
+                <input type="number" id="minValue" name="minValue" min="0" max="1000" value="1" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+              </div>
+              <div>
+                <label for="maxValue" class="block text-gray-700 font-medium mb-2">最大值</label>
+                <input type="number" id="maxValue" name="maxValue" min="1" max="1000" value="20" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus">
+              </div>
+            </div>
+            
+            <!-- 题目数量 -->
+            <div>
+              <label for="questionCount" class="block text-gray-700 font-medium mb-2">题目数量</label>
+              <div class="flex items-center">
+                <button type="button" id="decreaseCount" class="w-10 h-10 bg-gray-100 rounded-l-lg flex items-center justify-center hover:bg-gray-200 transition-colors">
+                  <i class="fa fa-minus"></i>
+                </button>
+                <input type="number" id="questionCount" name="questionCount" min="1" max="100" value="10" 
+                       class="w-full text-center px-4 py-2 border-y border-gray-300 input-focus">
+                <button type="button" id="increaseCount" class="w-10 h-10 bg-gray-100 rounded-r-lg flex items-center justify-center hover:bg-gray-200 transition-colors">
+                  <i class="fa fa-plus"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- 难度设置 -->
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">难度级别</label>
+              <div class="flex items-center space-x-3">
+                <label class="inline-flex items-center">
+                  <input type="radio" name="difficulty" value="easy" class="form-radio h-5 w-5 text-primary" checked>
+                  <span class="ml-2">简单</span>
+                </label>
+                <label class="inline-flex items-center">
+                  <input type="radio" name="difficulty" value="medium" class="form-radio h-5 w-5 text-primary">
+                  <span class="ml-2">中等</span>
+                </label>
+                <label class="inline-flex items-center">
+                  <input type="radio" name="difficulty" value="hard" class="form-radio h-5 w-5 text-primary">
+                  <span class="ml-2">困难</span>
+                </label>
+              </div>
+            </div>
+            
+            <!-- 生成按钮 -->
+            <button type="submit" id="generateBtn" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-xl btn-hover flex items-center justify-center">
+              <i class="fa fa-refresh mr-2"></i> 生成题目
+            </button>
+          </form>
+        </div>
+      </div>
+      
+      <!-- 右侧题目展示区 -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-2xl p-6 card-shadow mb-8">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-primary flex items-center">
+              <i class="fa fa-calculator mr-2"></i> 口算练习
+            </h2>
+            <div class="flex space-x-3">
+              <button id="printBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg flex items-center btn-hover">
+                <i class="fa fa-print mr-2"></i> 打印
+              </button>
+              <button id="checkBtn" class="bg-secondary hover:bg-secondary/90 text-white py-2 px-4 rounded-lg flex items-center btn-hover">
+                <i class="fa fa-check mr-2"></i> 检查答案
+              </button>
+            </div>
+          </div>
+          
+          <!-- 题目区域 -->
+          <div id="questionsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- 题目将通过JavaScript动态生成 -->
+          </div>
+          
+          <!-- 结果统计 -->
+          <div id="resultStats" class="mt-8 hidden">
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-5">
+              <h3 class="font-bold text-lg mb-3 text-primary">练习结果</h3>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-primary" id="totalQuestions">0</div>
+                  <div class="text-gray-600 text-sm">总题数</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-green-500" id="correctAnswers">0</div>
+                  <div class="text-gray-600 text-sm">正确</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-red-500" id="wrongAnswers">0</div>
+                  <div class="text-gray-600 text-sm">错误</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-accent" id="accuracy">0%</div>
+                  <div class="text-gray-600 text-sm">正确率</div>
+                </div>
+              </div>
+              <div class="mt-4">
+                <button id="restartBtn" class="bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg btn-hover">
+                  <i class="fa fa-repeat mr-2"></i> 重新练习
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <!-- 页脚 -->
+    <footer class="mt-16 text-center text-gray-500 text-sm">
+      <p>© 2025 数学口算出题神器 | 让计算练习更有趣</p>
+    </footer>
+  </div>
+
+  <!-- 提示消息 -->
+  <div id="toast" class="fixed bottom-8 right-8 bg-dark text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center">
+    <i id="toastIcon" class="fa fa-check-circle mr-2"></i>
+    <span id="toastMessage">操作成功!</span>
+  </div>
+
+  <script>
+    // 数学题目生成和管理
+    document.addEventListener('DOMContentLoaded', function() {
+      // DOM元素
+      const quizSettings = document.getElementById('quizSettings');
+      const questionsContainer = document.getElementById('questionsContainer');
+      const resultStats = document.getElementById('resultStats');
+      const checkBtn = document.getElementById('checkBtn');
+      const restartBtn = document.getElementById('restartBtn');
+      const printBtn = document.getElementById('printBtn');
+      const decreaseCount = document.getElementById('decreaseCount');
+      const increaseCount = document.getElementById('increaseCount');
+      const questionCount = document.getElementById('questionCount');
+      
+      // 全局变量
+      let currentQuestions = [];
+      let userAnswers = [];
+      
+      // 题目生成逻辑
+      quizSettings.addEventListener('submit', function(e) {
+        e.preventDefault();
+        generateQuestions();
+        scrollToQuestions();
+      });
+      
+      // 增减题目数量
+      decreaseCount.addEventListener('click', function() {
+        if (questionCount.value > 1) {
+          questionCount.value = parseInt(questionCount.value) - 1;
+        }
+      });
+      
+      increaseCount.addEventListener('click', function() {
+        if (questionCount.value < 100) {
+          questionCount.value = parseInt(questionCount.value) + 1;
+        }
+      });
+      
+      // 检查答案
+      checkBtn.addEventListener('click', checkAnswers);
+      
+      // 重新练习
+      restartBtn.addEventListener('click', function() {
+        resultStats.classList.add('hidden');
+        questionsContainer.querySelectorAll('input').forEach(input => {
+          input.value = '';
+          input.classList.remove('border-green-500', 'border-red-500');
+        });
+        userAnswers = [];
+        scrollToQuestions();
+      });
+      
+      // 打印功能
+      printBtn.addEventListener('click', function() {
+        window.print();
+        showToast('打印已准备好', 'print');
+      });
+      
+      // 生成题目
+      function generateQuestions() {
+        // 获取设置
+        const operations = Array.from(document.querySelectorAll('input[name="operation"]:checked')).map(checkbox => checkbox.value);
+        const minValue = parseInt(document.getElementById('minValue').value);
+        const maxValue = parseInt(document.getElementById('maxValue').value);
+        const count = parseInt(document.getElementById('questionCount').value);
+        const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+        
+        // 验证设置
+        if (operations.length === 0) {
+          showToast('请至少选择一种运算类型', 'error');
+          return;
+        }
+        
+        if (minValue >= maxValue) {
+          showToast('最小值必须小于最大值', 'error');
+          return;
+        }
+        
+        // 清空现有题目和结果
+        questionsContainer.innerHTML = '';
+        resultStats.classList.add('hidden');
+        currentQuestions = [];
+        userAnswers = [];
+        
+        // 根据难度调整参数
+        let adjustedMaxValue = maxValue;
+        let allowNegatives = false;
+        let allowDecimals = false;
+        
+        switch (difficulty) {
+          case 'medium':
+            adjustedMaxValue = Math.min(maxValue * 2, 1000);
+            allowNegatives = true;
+            break;
+          case 'hard':
+            adjustedMaxValue = Math.min(maxValue * 5, 1000);
+            allowNegatives = true;
+            allowDecimals = true;
+            break;
+        }
+        
+        // 生成题目
+        for (let i = 0; i < count; i++) {
+          const operation = operations[Math.floor(Math.random() * operations.length)];
+          let question = {};
+          
+          switch (operation) {
+            case 'addition':
+              question = generateAdditionQuestion(minValue, adjustedMaxValue);
+              break;
+            case 'subtraction':
+              question = generateSubtractionQuestion(minValue, adjustedMaxValue, allowNegatives);
+              break;
+            case 'multiplication':
+              question = generateMultiplicationQuestion(minValue, Math.min(adjustedMaxValue, 50));
+              break;
+            case 'division':
+              question = generateDivisionQuestion(minValue, Math.min(adjustedMaxValue, 100), allowDecimals);
+              break;
+          }
+          
+          currentQuestions.push(question);
+          renderQuestion(question, i);
+        }
+        
+        showToast(`成功生成 ${count} 道题目`, 'success');
+      }
+      
+      // 生成加法题目
+      function generateAdditionQuestion(min, max) {
+        const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+        const num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+        return {
+          question: `${num1} + ${num2} =`,
+          answer: num1 + num2,
+          operation: 'addition'
+        };
+      }
+      
+      // 生成减法题目
+      function generateSubtractionQuestion(min, max, allowNegatives) {
+        const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+        const num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+        
+        if (allowNegatives || num1 >= num2) {
+          return {
+            question: `${num1} - ${num2} =`,
+            answer: num1 - num2,
+            operation: 'subtraction'
+          };
+        } else {
+          return {
+            question: `${num2} - ${num1} =`,
+            answer: num2 - num1,
+            operation: 'subtraction'
+          };
+        }
+      }
+      
+      // 生成乘法题目
+      function generateMultiplicationQuestion(min, max) {
+        // 控制乘法难度，避免过大的数字
+        const num1 = Math.floor(Math.random() * (Math.min(max, 15) - min + 1)) + min;
+        const num2 = Math.floor(Math.random() * (Math.min(max, 15) - min + 1)) + min;
+        return {
+          question: `${num1} × ${num2} =`,
+          answer: num1 * num2,
+          operation: 'multiplication'
+        };
+      }
+      
+      // 生成除法题目
+      function generateDivisionQuestion(min, max, allowDecimals) {
+        // 确保能整除
+        let divisor = Math.floor(Math.random() * (max - min + 1)) + min;
+        let quotient = Math.floor(Math.random() * (10 - 2 + 1)) + 2; // 2-10之间的商
+        let dividend = divisor * quotient;
+        
+        // 如果允许小数，生成更复杂的除法
+        if (allowDecimals && Math.random() > 0.5) {
+          dividend = Math.floor(Math.random() * (max - min + 1)) + min;
+          divisor = Math.floor(Math.random() * (10 - 2 + 1)) + 2; // 2-10之间的除数
+          const answer = parseFloat((dividend / divisor).toFixed(2));
+          
+          return {
+            question: `${dividend} ÷ ${divisor} =`,
+            answer: answer,
+            operation: 'division',
+            isDecimal: true
+          };
+        }
+        
+        return {
+          question: `${dividend} ÷ ${divisor} =`,
+          answer: quotient,
+          operation: 'division'
+        };
+      }
+      
+      // 渲染单个题目
+      function renderQuestion(question, index) {
+        const questionEl = document.createElement('div');
+        questionEl.className = 'bg-gray-50 p-5 rounded-xl border border-gray-100 hover:border-primary/30 transition-colors';
+        
+        // 题目序号和内容
+        const questionNumber = document.createElement('span');
+        questionNumber.className = 'inline-block w-8 h-8 bg-primary text-white rounded-full text-center leading-8 mr-2 mb-3';
+        questionNumber.textContent = index + 1;
+        
+        const questionText = document.createElement('span');
+        questionText.className = 'text-lg font-medium';
+        questionText.textContent = question.question;
+        
+        // 答案输入框
+        const answerInput = document.createElement('input');
+        answerInput.type = 'text';
+        answerInput.className = 'w-20 mx-2 px-3 py-2 border border-gray-300 rounded-lg input-focus';
+        answerInput.dataset.index = index;
+        
+        // 运算类型图标
+        const operationIcon = document.createElement('i');
+        switch (question.operation) {
+          case 'addition':
+            operationIcon.className = 'fa fa-plus-circle text-blue-500 ml-2';
+            break;
+          case 'subtraction':
+            operationIcon.className = 'fa fa-minus-circle text-red-500 ml-2';
+            break;
+          case 'multiplication':
+            operationIcon.className = 'fa fa-times-circle text-green-500 ml-2';
+            break;
+          case 'division':
+            operationIcon.className = 'fa fa-divide text-purple-500 ml-2';
+            break;
+        }
+        
+        // 组装题目元素
+        questionEl.appendChild(questionNumber);
+        questionEl.appendChild(questionText);
+        questionEl.appendChild(answerInput);
+        questionEl.appendChild(operationIcon);
+        
+        // 添加到容器
+        questionsContainer.appendChild(questionEl);
+        
+        // 监听答案输入
+        answerInput.addEventListener('input', function() {
+          const answerIndex = parseInt(this.dataset.index);
+          userAnswers[answerIndex] = this.value.trim();
+        });
+      }
+      
+      // 检查答案
+      function checkAnswers() {
+        if (currentQuestions.length === 0) return;
+        
+        let correctCount = 0;
+        let wrongCount = 0;
+        
+        // 检查每个答案
+        questionsContainer.querySelectorAll('input').forEach(input => {
+          const index = parseInt(input.dataset.index);
+          const userAnswer = input.value.trim();
+          const correctAnswer = currentQuestions[index].answer.toString();
+          
+          // 处理小数精度
+          if (currentQuestions[index].isDecimal && userAnswer) {
+            const userNum = parseFloat(userAnswer);
+            const correctNum = parseFloat(correctAnswer);
+            if (Math.abs(userNum - correctNum) < 0.01) {
+              input.classList.add('border-green-500');
+              input.classList.remove('border-red-500');
+              correctCount++;
+            } else {
+              input.classList.add('border-red-500');
+              input.classList.remove('border-green-500');
+              wrongCount++;
+            }
+            return;
+          }
+          
+          // 普通检查
+          if (userAnswer === correctAnswer) {
+            input.classList.add('border-green-500');
+            input.classList.remove('border-red-500');
+            correctCount++;
+          } else if (userAnswer === '') {
+            input.classList.remove('border-green-500', 'border-red-500');
+          } else {
+            input.classList.add('border-red-500');
+            input.classList.remove('border-green-500');
+            wrongCount++;
+          }
+        });
+        
+        // 更新统计结果
+        document.getElementById('totalQuestions').textContent = currentQuestions.length;
+        document.getElementById('correctAnswers').textContent = correctCount;
+        document.getElementById('wrongAnswers').textContent = wrongCount;
+        document.getElementById('accuracy').textContent = 
+          currentQuestions.length > 0 ? 
+          `${Math.round((correctCount / currentQuestions.length) * 100)}%` : '0%';
+        
+        // 显示结果
+        resultStats.classList.remove('hidden');
+        
+        // 滚动到结果
+        resultStats.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // 显示提示
+        showToast(`已检查 ${currentQuestions.length} 道题目`, 'success');
+      }
+      
+      // 显示提示消息
+      function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
+        
+        // 设置图标和颜色
+        if (type === 'success') {
+          toast.className = 'fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-0 opacity-100 transition-all duration-300 flex items-center';
+          toastIcon.className = 'fa fa-check-circle mr-2';
+        } else if (type === 'error') {
+          toast.className = 'fixed bottom-8 right-8 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-0 opacity-100 transition-all duration-300 flex items-center';
+          toastIcon.className = 'fa fa-exclamation-circle mr-2';
+        } else if (type === 'print') {
+          toast.className = 'fixed bottom-8 right-8 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-0 opacity-100 transition-all duration-300 flex items-center';
+          toastIcon.className = 'fa fa-print mr-2';
+        }
+        
+        toastMessage.textContent = message;
+        
+        // 显示提示
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        
+        // 3秒后隐藏
+        setTimeout(() => {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('translate-y-20', 'opacity-0');
+        }, 3000);
+      }
+      
+      // 滚动到题目区域
+      function scrollToQuestions() {
+        questionsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  </script>
+</body>
+</html>
